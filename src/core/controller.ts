@@ -9,6 +9,14 @@ export interface IHandleCallback {
   (req: Request, res: Response): void;
 }
 
+export interface IAsyncHandleCallback {
+  (req: Request, res: Response): Promise<void>;
+}
+
+export type THandleCallback = (req: Request, res: Response) => void;
+
+export type TAsyncHandleCallback = (req: Request, res: Response) => Promise<void>;
+
 export interface IController {
   path: string;
   routers: Router;
@@ -32,9 +40,9 @@ export class RouterDefine {
   }
 
   static handle(url: string, method: Method = Method.ALL) {
-    return function (target: any, prop: string, descriptor: TypedPropertyDescriptor<IHandleCallback>) {
+    return function (target: any, prop: string) {
       const {routers} = target.constructor as IController;
-      const handle = (target[prop] as IHandleCallback).bind(target);
+      const handle = (target[prop] as IAsyncHandleCallback | IHandleCallback).bind(target);
 
       switch (method) {
         case Method.ALL: {

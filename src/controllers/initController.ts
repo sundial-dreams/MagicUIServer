@@ -5,7 +5,7 @@ export default class InitController extends Controller {
     static path: string = '/';
     static routers: Router = express.Router();
 
-    @RouterDefine.get('/userLogin') handleUserLogin(req: Request, res: Response) {
+    @RouterDefine.get('/userLogin') async handleUserLogin(req: Request, res: Response) {
         console.log('eee');
         res.send('hhhh');
     }

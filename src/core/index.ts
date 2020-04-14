@@ -11,8 +11,8 @@ export default class App extends EventEmitter {
     this.on('error', console.error);
 
     this.app = express();
-    this.controllers(state.controllers || []);
     this.middleware(state.middleware || []);
+    this.controllers(state.controllers || []);
   }
 
   controllers(controllers: Controller[]) {

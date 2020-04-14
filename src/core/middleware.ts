@@ -5,6 +5,6 @@ export interface IMiddlewareCallback {
 }
 
 export default abstract class Middleware {
-  abstract exec(req: Request, res: Response, next: () => void): void;
+  abstract async exec(req: Request, res: Response, next: () => void): Promise<void>;
 }
 

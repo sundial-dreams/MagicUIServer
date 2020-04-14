@@ -13,6 +13,7 @@ const app = new App({
     new LogMiddleware(),
     (req: Request, res: Response, next: () => void) => {
       console.log('console.log');
+      next();
     }
   ]
 });
