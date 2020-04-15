@@ -17,8 +17,10 @@ export default class App extends EventEmitter {
 
   controllers(controllers: Controller[]) {
     controllers.forEach(controller => {
-      const {path, routers} = controller.constructor as unknown as IController;
-      this.app.use(path, routers);
+      const {baseUrl, routers} = controller.constructor as unknown as IController;
+      console.log('cout: ', baseUrl, routers);
+      console.log('controller: ', controller.constructor);
+      this.app.use(baseUrl, routers);
     });
   }
 

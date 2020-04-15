@@ -1,16 +1,16 @@
 import express, {Request, Response, Router} from 'express';
-import Controller, {Method, RouterDefine} from '../core/controller';
-
+import Controller from '../core/controller';
+import DefineRouter, {Method, RouterDefined} from '../core/defineRouter';
 
 export default class SecondController extends Controller {
-  static path: string = '/second';
+  static baseUrl: string = '/second';
   static routers: Router = express.Router();
 
-  @RouterDefine.handle('/') handle(req: Request, res: Response) {
+  @DefineRouter.handle('/') handle(req: Request, res: Response) {
     res.send('second');
   }
 
-  @RouterDefine.handle('/func', Method.GET) handle2(req: Request, res: Response) {
+  @DefineRouter.handle('/func', Method.GET) handle2(req: Request, res: Response) {
     res.json({
       data: 'func handle 2'
     });
