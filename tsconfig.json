@@ -12,10 +12,12 @@
     "allowJs": true,
     "resolveJsonModule": true,
     "outDir": "build",
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "build"
   ],
   "include": [
     "src"

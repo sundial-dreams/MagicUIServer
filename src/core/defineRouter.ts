@@ -1,4 +1,5 @@
 import {IAsyncHandleCallback, IController, IHandleCallback} from './controller';
+import { Router } from 'express';
 
 export enum Method {
   GET,
@@ -17,39 +18,63 @@ export default class DefineRouter {
   }
 
   static handle(url: string, method: Method = Method.ALL) {
+    url = url.startsWith('/') ? url : `/${url}`;
     return function (target: any, prop: string) {
-      const {routers} = target.constructor as IController;
-      console.log('routers: ', routers);
-      const handle = (target[prop] as IAsyncHandleCallback | IHandleCallback).bind(target);
-      console.log('handle: ', handle);
-      switch (method) {
-        case Method.ALL: {
-          routers.all(url, handle);
-          return;
-        }
-        case Method.GET: {
-          routers.get(url, handle);
-          return;
-        }
-        case Method.POST: {
-          routers.post(url, handle);
-          return;
-        }
-      }
+      const {routerMap} = target.constructor as IController;
+      const handle = (target[prop] as IAsyncHandleCallback | IHandleCallback);
+      routerMap.set(url, [method, handle]);
+      // switch (method) {
+      //   case Method.ALL: {
+      //     routers.all(url, handle);
+      //     return;
+      //   }
+      //   case Method.GET: {
+      //     routers.get(url, handle);
+      //     return;
+      //   }
+      //   case Method.POST: {
+      //     routers.post(url, handle);
+      //     return;
+      //   }
+      // }
     };
   }
 }
-/*
-export function DefineRouter(params: { baseUrl: string } = { baseUrl: '/' }) {
-  return function <T extends {new(...args: any[]): {}}> (constructor: T) {
-    console.log('constructor = ', constructor);
-    // (constructor as any).baseUrl = '/';
-    // (constructor as any).routers = express.Router();
-    // return constructor;
-    return class extends constructor {
-      static readonly baseUrl: string = params.baseUrl;
-      static readonly routers: Router = express.Router();
-    }
-  }
-}
- */
+//
+// const DefineRouter: Function | any = (params: {baseUrl: string}) => {
+//   return function (target: any) {
+//     target.baseUrl = params.baseUrl;
+//     target.routers = Router();
+//   }
+// }
+//
+// DefineRouter.get = function(url: string) {
+//   return DefineRouter.handle(url, Method.GET);
+// }
+//
+// DefineRouter.post = function(url: string) {
+//   return DefineRouter.handle(url, Method.POST);
+// }
+//
+// DefineRouter.handle = function(url: string, method: Method = Method.ALL) {
+//   return function (target: any, prop: string) {
+//     const {routers} = target.constructor as IController;
+//     const handle = (target[prop] as IAsyncHandleCallback | IHandleCallback).bind(target);
+//     switch (method) {
+//       case Method.ALL: {
+//         routers.all(url, handle);
+//         return;
+//       }
+//       case Method.GET: {
+//         routers.get(url, handle);
+//         return;
+//       }
+//       case Method.POST: {
+//         routers.post(url, handle);
+//         return;
+//       }
+//     }
+//   };
+// }
+//
+// export default DefineRouter;

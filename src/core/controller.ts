@@ -1,9 +1,12 @@
 import express, {Request, Response, Router} from 'express';
+import { Method } from './defineRouter';
 
 export default class Controller {
-  static baseUrl: string = '/';
-  static routers: Router = express.Router();
+  static readonly baseUrl: string = '/';
+  static readonly routerMap: TRouterMap = new Map();
 }
+
+export type TRouterMap = Map<string, [Method, IHandleCallback | IAsyncHandleCallback]>;
 
 export interface IHandleCallback {
   (req: Request, res: Response): void;
@@ -19,7 +22,7 @@ export type TAsyncHandleCallback = (req: Request, res: Response) => Promise<void
 
 export interface IController {
   baseUrl: string;
-  routers: Router;
+  routerMap: TRouterMap
 }
 
 

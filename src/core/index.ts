@@ -1,7 +1,8 @@
-import express, {Application} from 'express';
-import {EventEmitter} from 'events';
-import Controller, {IController} from './controller';
-import Middleware, {IMiddlewareCallback} from './middleware';
+import express, { Application, Router } from 'express';
+import { EventEmitter } from 'events';
+import Controller, { IController } from './controller';
+import Middleware, { IMiddlewareCallback } from './middleware';
+import { Method } from './defineRouter';
 
 export default class App extends EventEmitter {
   private readonly app: Application;
@@ -17,9 +18,25 @@ export default class App extends EventEmitter {
 
   controllers(controllers: Controller[]) {
     controllers.forEach(controller => {
-      const {baseUrl, routers} = controller.constructor as unknown as IController;
-      console.log('cout: ', baseUrl, routers);
-      console.log('controller: ', controller.constructor);
+      const { baseUrl, routerMap } = controller.constructor as unknown as IController;
+      const routers = Router();
+      for (let [url, [method, handle]] of routerMap) {
+        console.log(url, method, handle);
+        switch (method) {
+          case Method.GET: {
+            routers.get(url, handle.bind(controller));
+            break;
+          }
+          case Method.POST: {
+            routers.post(url, handle.bind(controller));
+            break;
+          }
+          case Method.ALL: {
+            routers.all(url, handle.bind(controller));
+            break;
+          }
+        }
+      }
       this.app.use(baseUrl, routers);
     });
   }
