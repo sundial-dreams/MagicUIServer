@@ -1,6 +1,8 @@
 export interface IWebGLPage {
   createTime: number;
   own: string;
+  name: string;
+  description: string;
   page?: IWebGLComponent | null
 }
 
@@ -8,7 +10,7 @@ export interface IWebGLComponent {
   type: string,
   name: string,
   props: {
-    position: {x:number, y: number},
+    position: { x: number, y: number },
     size: {
       width: number,
       height: number
@@ -37,4 +39,23 @@ export interface IWebGLComponent {
     }
   },
   children: IWebGLComponent[],
+}
+
+
+export interface IFolder {
+  type: string,
+  name: string,
+  id: string,
+  folder: string,
+  createTime?: number,
+  files: (IFolder | IFile)[]
+}
+
+export interface IFile {
+  type: string,
+  name: string,
+  id: string,
+  folder: string,
+  createTime?: number,
+  code: string
 }

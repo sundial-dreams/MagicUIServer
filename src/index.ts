@@ -8,22 +8,26 @@ import { User } from './model/user';
 import { WebglPage } from './model/webglPage';
 
 import LogMiddleware from './middleware/log';
-import LoginController from './controllers/login';
+import UserController from './controllers/user';
 import WebGLEditorController from './controllers/webglEditor';
+import DSLEditorController from './controllers/dslEditor';
+import DslFiles from './model/dslFiles';
+import SocketService from './socket';
 
 
-const entities: Function[] = [User, WebglPage];
+const entities: Function[] = [User, WebglPage, DslFiles];
 
 
 async function main() {
   try {
-    await MongoDB.connect();
+    // await MongoDB.connect();
     await MySQL.connect(entities);
 
     const app = new App({
       controllers: [
-        new LoginController(),
-        new WebGLEditorController()
+        new UserController(),
+        new WebGLEditorController(),
+        new DSLEditorController()
       ],
       middleware: [
         bodyParser.urlencoded({ extended: false }),
@@ -31,7 +35,9 @@ async function main() {
         new LogMiddleware()
       ]
     });
+    const socket = new SocketService();
 
+    socket.listen();
     app.listen(8000, () => console.log('listening 8000'));
   } catch (e) {
     throw new Error(e);

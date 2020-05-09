@@ -4,27 +4,24 @@ import { ObjectId } from 'mongodb';
 import { Router } from 'express';
 import Controller from '../core/controller';
 import DefineRouter from '../core/defineRouter';
-import MongoDB from '../database/mongodb';
+import MongoDB, { DATABASE_NAME } from '../database/mongodb';
 import { WebglPage, WebglPageRepository } from '../model/webglPage';
 import { IWebGLPage } from '../model/mongodb';
 
 export default class WebGLEditorController extends Controller {
   static baseUrl = '/ui_editor';
   static readonly routerMap = new Map();
-  // static routers = Router();
-  static webglPageRepository: WebglPageRepository;
+  private readonly webglPageRepository = getCustomRepository(WebglPageRepository);
 
   constructor() {
     super();
-    WebGLEditorController.webglPageRepository = getCustomRepository(WebglPageRepository);
 
   }
 
-  @DefineRouter.get('/webgl_page')
-  async handleUIPage(req: Request, res: Response) {
+  @DefineRouter.get('/webgl_page') async handleUIPage(req: Request, res: Response) {
     try {
       const email = req.params.email as string;
-      let result = await WebGLEditorController.webglPageRepository.find({ own: email });
+      let result = await this.webglPageRepository.find({ own: email });
       res.json({
         err: false,
         pages: result
@@ -39,12 +36,9 @@ export default class WebGLEditorController extends Controller {
     }
   }
 
-  @DefineRouter.get('/current_page')
-  async handleCurrentPage(req: Request, res: Response) {
+  @DefineRouter.get('/current_page') async handleCurrentPage(req: Request, res: Response) {
     try {
       const pageId = req.query.pageId as string;
-      console.log(req.query);
-      console.log(pageId);
       let result = await MongoDB.find('webgl_page', { _id: new ObjectId(pageId) });
       if (result.length > 0) {
         const [curPage] = result;
@@ -64,15 +58,14 @@ export default class WebGLEditorController extends Controller {
     }
   }
 
-  @DefineRouter.post('/create_page')
-  async handleCreatePage(req: Request, res: Response) {
+  @DefineRouter.post('/create_page') async handleCreatePage(req: Request, res: Response) {
     try {
       const email = req.body.email as string;
       const name = req.body.name as string;
       const description = req.body.description as string;
       const createTime = +Date.now();
 
-      const onePage = { own: email, createTime, page: null } as IWebGLPage;
+      const onePage = { own: email, createTime, page: null, name, description } as IWebGLPage;
 
       let result = await MongoDB.insert('webgl_page', [onePage]);
       const webglPage = new WebglPage();
@@ -81,7 +74,7 @@ export default class WebGLEditorController extends Controller {
       webglPage.name = name;
       webglPage.description = description;
       webglPage.id = '' + result.insertedIds[0];
-      await WebGLEditorController.webglPageRepository.save(webglPage);
+      await this.webglPageRepository.save(webglPage);
       res.json({
         err: false,
         pageId: webglPage.id
@@ -94,11 +87,42 @@ export default class WebGLEditorController extends Controller {
     }
   }
 
-  @DefineRouter.post('/update_page')
-  async handleUpdatePage(req: Request, res: Response) {
+  @DefineRouter.get('/all_page') async handleAllPage(req: Request, res: Response) {
     try {
+      const email = req.query.email as string;
+      const result = <IWebGLPage[]> await MongoDB.find('webgl_page', {own: email});
+      res.json({
+        err: false,
+        pages: result,
+      });
+    } catch (e) {
+      res.json({
+        err: true,
+        msg: 'api error!'
+      })
+      throw new Error(e);
+    }
+  }
+
+  @DefineRouter.post('/update_page') async handleUpdatePage(req: Request, res: Response) {
+    try {
+      const pageId = req.body.pageId as string;
+      const updatedPage = JSON.parse(req.body.updatedPage as string);
+      console.log(pageId);
+      const client = await MongoDB.client();
+      const db = client.db(DATABASE_NAME);
+      const collection = db.collection('webgl_page');
+      const result = await collection.findOneAndUpdate({_id: new ObjectId(pageId)}, {$set: {page: updatedPage}}).finally(() => client.close());
+      res.json({
+        err: !result.ok
+      });
 
     } catch (e) {
+      res.json({
+        err: true,
+        msg: 'api error!'
+      })
+      throw new Error(e);
 
     }
   }

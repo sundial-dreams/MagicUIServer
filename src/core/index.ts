@@ -21,7 +21,6 @@ export default class App extends EventEmitter {
       const { baseUrl, routerMap } = controller.constructor as unknown as IController;
       const routers = Router();
       for (let [url, [method, handle]] of routerMap) {
-        console.log(url, method, handle);
         switch (method) {
           case Method.GET: {
             routers.get(url, handle.bind(controller));

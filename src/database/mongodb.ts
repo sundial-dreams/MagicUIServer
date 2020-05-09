@@ -1,4 +1,4 @@
-import { FilterQuery, MongoClient } from 'mongodb';
+import { FilterQuery, MongoClient, ObjectId } from 'mongodb';
 import { EventEmitter } from 'events';
 
 export const MONGODB_URI = 'mongodb://localhost:27017';
@@ -68,6 +68,30 @@ class MongoDB extends EventEmitter {
 
   async client() {
     return await this.connect();
+  }
+
+  async updateById(col: string, id: string, updated: object) {
+    try {
+      const client = await this.connect();
+      const db = client.db(DATABASE_NAME);
+      const collection = db.collection(col);
+      return await collection.findOneAndUpdate({ _id: new ObjectId(id) }, { $set: updated });
+    } catch (e) {
+      throw new Error(e);
+
+    }
+  }
+
+  async findAndUpdate(col: string, query: FilterQuery<any>, updated: any) {
+    try {
+      const client = await this.connect();
+      const db = client.db(DATABASE_NAME);
+      const collection = db.collection(col);
+      return await collection.findOneAndUpdate(query, { $set: updated });
+    } catch (e) {
+      throw new Error(e);
+
+    }
   }
 }
 
