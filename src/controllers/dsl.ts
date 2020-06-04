@@ -53,8 +53,7 @@ export default class DSLEditorController extends Controller {
     }
   }
 
-  @DefineRouter.post('/rename_dsl_file')
-  async handleRenameDslFile(req: Request, res: Response) {
+  @DefineRouter.post('/rename_dsl_file') async handleRenameDslFile(req: Request, res: Response) {
     try {
 
     } catch (e) {

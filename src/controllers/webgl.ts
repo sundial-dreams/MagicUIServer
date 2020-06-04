@@ -126,4 +126,10 @@ export default class WebGLEditorController extends Controller {
 
     }
   }
+  @DefineRouter.post('/delete_page') async handleDeletePage(req: Request, res: Response) {
+
+  }
+  @DefineRouter.post('/rename_page') async handleRenamePage(req: Request, res: Response) {
+
+  }
 }
