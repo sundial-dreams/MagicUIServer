@@ -1,17 +1,18 @@
 import { Request, Response } from 'express';
 import { getCustomRepository } from 'typeorm';
 import { ObjectId } from 'mongodb';
-import { Router } from 'express';
 import Controller from '../core/controller';
 import DefineRouter from '../core/defineRouter';
-import MongoDB, { DATABASE_NAME } from '../database/mongodb';
-import { WebglPage, WebglPageRepository } from '../model/webglPage';
-import { IWebGLPage } from '../model/mongodb';
+import { WebGLPage, WebglPageRepository } from '../model/mysql/WebGLPage';
+import { md5 } from '../utils/md5';
+import { IWebGLPage, WebGLPageCollection } from '../model/mongodb/WebGLPageCollection';
 
 export default class WebGLEditorController extends Controller {
   static baseUrl = '/ui_editor';
   static readonly routerMap = new Map();
-  private readonly webglPageRepository = getCustomRepository(WebglPageRepository);
+
+  private readonly pageRep = getCustomRepository(WebglPageRepository);
+  private readonly pageCol = new WebGLPageCollection();
 
   constructor() {
     super();
@@ -21,7 +22,7 @@ export default class WebGLEditorController extends Controller {
   @DefineRouter.get('/webgl_page') async handleUIPage(req: Request, res: Response) {
     try {
       const email = req.params.email as string;
-      let result = await this.webglPageRepository.find({ own: email });
+      let result = await this.pageRep.find({ own: email });
       res.json({
         err: false,
         pages: result
@@ -39,7 +40,7 @@ export default class WebGLEditorController extends Controller {
   @DefineRouter.get('/current_page') async handleCurrentPage(req: Request, res: Response) {
     try {
       const pageId = req.query.pageId as string;
-      let result = await MongoDB.find('webgl_page', { _id: new ObjectId(pageId) });
+      let result = await this.pageCol.find({ _id: new ObjectId(pageId) });
       if (result.length > 0) {
         const [curPage] = result;
         res.json({
@@ -66,22 +67,25 @@ export default class WebGLEditorController extends Controller {
       const createTime = +Date.now();
 
       const onePage = { own: email, createTime, page: null, name, description } as IWebGLPage;
+      let result = await this.pageCol.insert([onePage]);
+      const webglPage = new WebGLPage({
+        own: email,
+        createTime,
+        name,
+        description,
+        id: md5(email + Date.now() + Math.floor(Math.random() * 1000)),
+        pageId: '' + result.insertedIds[0]
+      });
 
-      let result = await MongoDB.insert('webgl_page', [onePage]);
-      const webglPage = new WebglPage();
-      webglPage.own = email;
-      webglPage.createTime = createTime;
-      webglPage.name = name;
-      webglPage.description = description;
-      webglPage.id = '' + result.insertedIds[0];
-      await this.webglPageRepository.save(webglPage);
+      await this.pageRep.save(webglPage);
+
       res.json({
         err: false,
-        pageId: webglPage.id
+        pageId: webglPage.pageId,
+        id: webglPage.id,
       });
 
     } catch (e) {
-
       res.json({ err: true, msg: 'api error!' });
       throw new Error(e);
     }
@@ -90,7 +94,8 @@ export default class WebGLEditorController extends Controller {
   @DefineRouter.get('/all_page') async handleAllPage(req: Request, res: Response) {
     try {
       const email = req.query.email as string;
-      const result = <IWebGLPage[]> await MongoDB.find('webgl_page', {own: email});
+      const result = await this.pageRep.find({own: email});
+
       res.json({
         err: false,
         pages: result,
@@ -104,15 +109,33 @@ export default class WebGLEditorController extends Controller {
     }
   }
 
+  @DefineRouter.get('/get_page') async handleGetPage(req: Request, res: Response) {
+    try {
+      const email = req.query.email as string;
+      const pageId = req.query.pageId as string;
+      const result = await this.pageCol.find({_id: new ObjectId(pageId), own: email});
+      if (result.length) {
+        res.json({
+          err: false,
+          page: result[0]
+        });
+        return;
+      }
+      res.json({
+        err: true,
+        msg: 'page not found!'
+      })
+    } catch (e) {
+
+    }
+  }
+
   @DefineRouter.post('/update_page') async handleUpdatePage(req: Request, res: Response) {
     try {
       const pageId = req.body.pageId as string;
+      const email = req.body.email as string;
       const updatedPage = JSON.parse(req.body.updatedPage as string);
-      console.log(pageId);
-      const client = await MongoDB.client();
-      const db = client.db(DATABASE_NAME);
-      const collection = db.collection('webgl_page');
-      const result = await collection.findOneAndUpdate({_id: new ObjectId(pageId)}, {$set: {page: updatedPage}}).finally(() => client.close());
+      const result = await this.pageCol.findAndUpdate({_id: new ObjectId(pageId), own: email}, {page: updatedPage});
       res.json({
         err: !result.ok
       });
@@ -127,9 +150,58 @@ export default class WebGLEditorController extends Controller {
     }
   }
   @DefineRouter.post('/delete_page') async handleDeletePage(req: Request, res: Response) {
+    try {
+      const email = req.body.email as string;
+      const id = req.body.id as string;
+      console.log(email, id);
+      const [page] = await this.pageRep.find({ own: email, id });
+      console.log(page);
+      if (page) {
+        await this.pageRep.remove(page);
+        await this.pageCol.remove({ _id: new ObjectId(page.pageId) });
+        const [onePage] = await this.pageRep.find({ own: email });
+        res.json({
+          err: false,
+          id: onePage.id,
+          name: onePage.name,
+          pageId: onePage.pageId
+        });
+        return;
+      }
+      res.json({
+        err: true,
+        msg: 'page not found!'
+      })
+    } catch (e) {
 
+    }
   }
   @DefineRouter.post('/rename_page') async handleRenamePage(req: Request, res: Response) {
-
+    try {
+      const email = req.body.email as string;
+      const id = req.body.id as string;
+      const name = req.body.name as string;
+      console.log(email, id, name);
+      const [page] = await this.pageRep.find({own: email, id});
+      if (page) {
+        page.name = name;
+        await this.pageRep.save(page);
+        await this.pageCol.findAndUpdate({ _id: new ObjectId(page.id), own: email },  {name})
+        res.json({
+          err: false,
+          newName: name
+        });
+        return;
+      }
+      res.json({
+        err: true,
+        msg: 'page not found!'
+      })
+    } catch (e) {
+      res.json({
+        err: true,
+        msg: 'api error!'
+      })
+    }
   }
 }

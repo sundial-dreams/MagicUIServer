@@ -6,7 +6,7 @@ export const MONGODB_URI = 'mongodb://localhost:27017';
 export const DATABASE_NAME = 'auto_ui';
 
 
-class MongoDB extends EventEmitter {
+export class MongoDB extends EventEmitter {
   static instance: MongoDB | null = null;
 
   static getInstance() {

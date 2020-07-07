@@ -2,11 +2,13 @@ import SocketIO  from 'socket.io';
 import { ObjectId } from 'mongodb';
 import { EventEmitter } from 'events';
 import MongoDB from '../database/mongodb';
+import { WebGLPageCollection } from '../model/mongodb/WebGLPageCollection';
 
 const port = 3000;
 
 export default class SocketService extends EventEmitter {
   private readonly socket: SocketIO.Server;
+  private readonly webglCol = new WebGLPageCollection();
   constructor() {
     super();
     this.socket = SocketIO();
@@ -17,8 +19,7 @@ export default class SocketService extends EventEmitter {
       try {
         const pageId = args.pageId;
         const page = args.page;
-        console.log('socket', pageId, page);
-        await MongoDB.findAndUpdate('webgl_page', { _id: new ObjectId(pageId)}, {
+        await this.webglCol.findAndUpdate({ _id: new ObjectId(pageId)}, {
           page
         });
 

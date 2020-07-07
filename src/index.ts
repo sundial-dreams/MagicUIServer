@@ -4,23 +4,25 @@ import bodyParser from 'body-parser';
 import App from './core';
 import MongoDB from './database/mongodb';
 import MySQL from './database/mysql';
-import { User } from './model/user';
-import { WebglPage } from './model/webglPage';
+import { User } from './model/mysql/User';
+import { WebGLPage } from './model/mysql/WebGLPage';
 
 import LogMiddleware from './middleware/log';
 import UserController from './controllers/user';
-import WebGLEditorController from './controllers/webglEditor';
-import DSLEditorController from './controllers/dslEditor';
-import DslFiles from './model/dslFiles';
+import WebGLEditorController from './controllers/webgl';
+import DSLEditorController from './controllers/dsl';
+import DslFolder from './model/mysql/DslFolder';
 import SocketService from './socket';
+import UserAvatar from './model/mysql/UserAvatar';
+import DslFile from './model/mysql/DslFile';
 
 
-const entities: Function[] = [User, WebglPage, DslFiles];
+const entities: Function[] = [User, WebGLPage, DslFolder, UserAvatar, DslFile];
 
 
 async function main() {
   try {
-    // await MongoDB.connect();
+    await MongoDB.connect();
     await MySQL.connect(entities);
 
     const app = new App({

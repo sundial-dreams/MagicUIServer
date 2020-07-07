@@ -1,7 +1,7 @@
 import { Column, Entity, EntityRepository, PrimaryColumn, Repository } from 'typeorm';
 
-@Entity()
-export class WebglPage {
+@Entity({ name: 'webgl_page' })
+export class WebGLPage {
   @PrimaryColumn({ type: 'varchar', length: 100 }) id!: string;
   @Column({ type: 'varchar', length: 20 }) name!: string;
   @Column({ type: 'varchar', length: 100 }) description!: string;
@@ -21,7 +21,7 @@ export class WebglPage {
   }
 }
 
-@EntityRepository(WebglPage)
-export class WebglPageRepository extends Repository<WebglPage> {
+@EntityRepository(WebGLPage)
+export class WebglPageRepository extends Repository<WebGLPage> {
 
 }

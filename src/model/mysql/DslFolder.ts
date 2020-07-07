@@ -1,21 +1,25 @@
 import { Column, Entity, EntityRepository, PrimaryColumn, Repository } from 'typeorm';
 
-export enum FileType {
-  FOLDER = 'folder',
-  FILE = 'file'
-}
-
-@Entity()
-export default class DslFiles {
+@Entity({name: 'dsl_folder'})
+export default class DslFolder {
   @PrimaryColumn({ type: 'varchar', length: 30 }) id!: string;
   @PrimaryColumn({ type: 'varchar', length: 30 }) own!: string;
-  @Column({ type: 'varchar' }) fileType!: string;
-  @Column({ type: 'varchar', length: 40 }) filename!: string;
+  @Column({ type: 'varchar', length: 40 }) name!: string;
   @Column({ type: 'varchar', length: 30 }) folder!: string;
-  @Column({ type: 'varchar' }) code!: string;
+  @Column({ type: 'bigint' }) createTime!: number;
+
+  constructor(params?: { id: string, own: string, name: string, folder: string, createTime: number }) {
+    if (params) {
+      this.id = params.id;
+      this.own = params.own;
+      this.name = params.name;
+      this.folder = params.folder;
+      this.createTime = params.createTime;
+    }
+  }
 }
 
-@EntityRepository(DslFiles)
-export class DslFilesRepository extends Repository<DslFiles> {
+@EntityRepository(DslFolder)
+export class DslFolderRepository extends Repository<DslFolder> {
 
 }

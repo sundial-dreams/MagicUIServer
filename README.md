@@ -1,9 +1,13 @@
-# Auto UI Server
+# Magic UI Server
 
-### node express
-
+#### 服务端
+数据库依赖mysql、mongodb
+#### 运行
++ 开发模式
 ```bash
-mysql -u root -p #mysql check
-sudo mongod --dbpath /usr/local/var/mongodb --logpath /usr/local/var/log/mongodb/mongo.log #mysql start
-cd /usr/local/etc/nginx
+npm run dev
+```
++ 生产模式
+```bash
+npm run start
 ```
