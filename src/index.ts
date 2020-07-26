@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import path from 'path';
 import 'reflect-metadata';
 import bodyParser from 'body-parser';
 import App from './core';
@@ -15,6 +16,7 @@ import DslFolder from './model/mysql/DslFolder';
 import SocketService from './socket';
 import UserAvatar from './model/mysql/UserAvatar';
 import DslFile from './model/mysql/DslFile';
+import exp from 'constants';
 
 
 const entities: Function[] = [User, WebGLPage, DslFolder, UserAvatar, DslFile];
@@ -25,6 +27,18 @@ async function main() {
     await MongoDB.connect();
     await MySQL.connect(entities);
 
+    const options = {
+      dotfiles: 'ignore',
+      etag: false,
+      extensions: ['htm', 'html', 'ts', 'png'],
+      index: false,
+      maxAge: '1d',
+      redirect: false,
+      setHeaders: function (res: Response, path: string, stat: any) {
+        res.set('x-timestamp', Date.now() + '')
+      }
+    }
+
     const app = new App({
       controllers: [
         new UserController(),
@@ -32,6 +46,7 @@ async function main() {
         new DSLEditorController()
       ],
       middleware: [
+        express.static('resources', options),
         bodyParser.urlencoded({ extended: false }),
         bodyParser.json(),
         new LogMiddleware()

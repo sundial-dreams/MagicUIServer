@@ -19,7 +19,7 @@ export class MongoDB extends EventEmitter {
   }
 
   async connect() {
-    return await MongoClient.connect(MONGODB_URI, { useNewUrlParser: true });
+    return await MongoClient.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
   }
 
   async find(col: string, args: FilterQuery<any>) {

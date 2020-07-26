@@ -9,13 +9,13 @@ async function testMySQLConnection() {
   const avatarRepository = getCustomRepository(UserAvatarRepository);
   let i = 0;
   let images = [
-    'http://localhost:9000/image/anime-1.jpeg',
-    'http://localhost:9000/image/anime-2.jpeg',
-    'http://localhost:9000/image/anime-3.jpg',
-    'http://localhost:9000/image/anime-4.png',
-    'http://localhost:9000/image/anime-5.jpg',
-    'http://localhost:9000/image/anime-6.jpg',
-    'http://localhost:9000/image/anime-7.jpg'
+    'http://localhost:8000/image/anime-1.jpeg',
+    'http://localhost:8000/image/anime-2.jpeg',
+    'http://localhost:8000/image/anime-3.jpg',
+    'http://localhost:8000/image/anime-4.png',
+    'http://localhost:8000/image/anime-5.jpg',
+    'http://localhost:8000/image/anime-6.jpg',
+    'http://localhost:8000/image/anime-7.jpg'
   ];
   for (let v of images) {
     let avatar = new UserAvatar();
